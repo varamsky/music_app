@@ -7,7 +7,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter App',
+      title: 'Music Player App',
       //home: HomeScreen(),
       home: HomeScreen(),
     );

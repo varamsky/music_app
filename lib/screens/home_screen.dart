@@ -1,10 +1,16 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_audio_query/flutter_audio_query.dart';
+import 'package:music_app/databases/db_songlist.dart';
+import 'package:music_app/model/db_Song_Info_Model.dart';
 import 'package:music_app/screens/player_screen.dart';
 import 'package:music_app/model/music_data.dart';
 
 class HomeScreen extends StatelessWidget {
   MusicData musicData = MusicData();
+
+  var db = DbSongList();
+
 
   Future<List> songs() async {
     musicData.songsList = await musicData.audioQuery.getSongs();
@@ -13,7 +19,29 @@ class HomeScreen extends StatelessWidget {
       print('Song name :: ${musicData.songsList[i].title}');
       print('AlbumArt :: ${musicData.songsList[i].albumArtwork}');
       print('Track :: ${musicData.songsList[i].track}');
+
+      /*SongInfo songInfo = musicData.songsList[i];
+
+
+      DbSongInfoModel newSong = DbSongInfoModel(
+          (songInfo.id != null)?songInfo.id:'NULL',
+          (songInfo.title != null)?songInfo.title:'NULL',
+          (songInfo.track != null)?songInfo.track:'NULL',
+          (songInfo.duration != null)?songInfo.duration:'NULL',
+          (songInfo.filePath != null)?songInfo.filePath:'NULL',
+      );*/
+
+      //print('before :: savedSongId');
+
+      //int savedSongId = await db.saveSong(newSong);
+      //print('\n\nLoop NOT done\n\nSongs added ${db.printAll}');
+
+      //print('before :: songFromDb');
+
+      //DbSongInfoModel songFromDb = await db.getSong(savedSongId);
     }
+
+    //print('\n\nLoop done\n\nSongs added ${db.printAll}');
 
     return musicData.songsList;
   }

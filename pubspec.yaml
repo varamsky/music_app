@@ -29,9 +29,9 @@ dependencies:
   path_provider: any
   just_audio: any
   assets_audio_player: any
-
   random_color: any
   provider: any
+  sqflite: any
 
 
   # The following adds the Cupertino Icons font to your application.

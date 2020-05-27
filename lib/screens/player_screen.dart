@@ -17,7 +17,6 @@ class PlayerScreen extends StatefulWidget {
 
 class _PlayerScreenState extends State<PlayerScreen> {
   final assetsAudioPlayer = AssetsAudioPlayer();
-
   //bool isPlay;
   //double sliderValue;
 
@@ -52,7 +51,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   playSong(SongInfo songInfo) async {
     final file = new File('${songInfo.filePath}');
-
 
     assetsAudioPlayer.open(
       Audio.file('${songInfo.filePath}'),);
