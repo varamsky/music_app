@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_audio_query/flutter_audio_query.dart';
+import 'package:music_app/model/model_Db_Song_Info.dart';
 import 'package:music_app/model/player_data.dart';
 import 'package:music_app/widgets/player_controls.dart';
 import 'package:provider/provider.dart';
 
 class PlayerScreen extends StatefulWidget {
-  final SongInfo currSong;
+  final ModelDbSongInfo currSong;
 
   PlayerScreen({this.currSong});
 
@@ -49,13 +49,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
     );
   }
 
-  playSong(SongInfo songInfo) async {
-    final file = new File('${songInfo.filePath}');
+  playSong(ModelDbSongInfo songInfo) async {
+    final file = new File('${songInfo.getStSongFilePath}');
 
     assetsAudioPlayer.open(
-      Audio.file('${songInfo.filePath}'),);
+      Audio.file('${songInfo.getStSongFilePath}'),);
 
-    print('PATH :: ${songInfo.filePath}  PLAYING');
+    print('PATH :: ${songInfo.getStSongFilePath}  PLAYING');
 
   }
 }

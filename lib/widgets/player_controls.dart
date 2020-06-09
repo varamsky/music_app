@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
+import 'package:music_app/model/model_Db_Song_Info.dart';
 import 'package:music_app/model/player_data.dart';
 import 'package:provider/provider.dart';
 import 'package:random_color/random_color.dart';
@@ -10,7 +11,7 @@ class MusicControls extends StatelessWidget {
 
   //bool isPlay;
   final AssetsAudioPlayer assetsAudioPlayer;
-  final SongInfo currSong;
+  final ModelDbSongInfo currSong;
 
   //MusicControls({@required this.isPlay,@required this.assetsAudioPlayer});
   MusicControls({@required this.assetsAudioPlayer,@required this.currSong});
@@ -29,7 +30,7 @@ class MusicControls extends StatelessWidget {
             height: 250.0,
             //color: Colors.transparent,//RandomColor().randomColor(),
             color: RandomColor().randomColor(),
-            child: Image.file(File(currSong.albumArtwork.toString()),fit: BoxFit.fill,),
+            child: Image.file(File(currSong.getStSongAlbumArtwork.toString()),fit: BoxFit.fill,),
           ),
           Row(
             mainAxisSize: MainAxisSize.max,
@@ -61,7 +62,7 @@ class MusicControls extends StatelessWidget {
           ),
           Slider(value: 0.0,
               min: 0,
-              max: int.parse(currSong.duration).toDouble(),
+              max: int.parse(currSong.getStSongDuration).toDouble(),
               divisions: 100,
               activeColor: Colors.green,
               inactiveColor: Colors.grey,
