@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:music_app/databases/db_songList.dart';
-import 'package:music_app/model/model_Db_Song_Info.dart';
+import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:music_app/screens/player_screen.dart';
 import 'package:music_app/model/music_data.dart';
 
@@ -14,15 +13,20 @@ class _HomeScreenState extends State<HomeScreen> {
   int f = 0;
 
   MusicData musicData = MusicData();
-  Future<List<ModelDbSongInfo>> _mySongs;//Future<List<SongInfo>> _mySongs;
+  Future<List<SongInfo>> _mySongs;
 
-  var db = DbSongList();
+  getSongs() async{
+    final FlutterAudioQuery audioQuery = FlutterAudioQuery();
+    _mySongs = audioQuery.getSongs();
+  }
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
-    //_mySongs = songs();
-    _mySongs = musicData.findSongs();
+    //getSongs();
+    final FlutterAudioQuery audioQuery = FlutterAudioQuery();
+    _mySongs = audioQuery.getSongs();
+    //_mySongs = musicData.findSongs();
   }
 
   @override
@@ -52,13 +56,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Container(
                             width: 40.0,
                             height: 40.0,
-                            child: Image.file(
-                              File(snap.data[index].getStSongAlbumArtwork.toString()),
+                            child: (snap.data[index].albumArtwork == null)?Image.asset('lib/assets/default_music_artwork.jpg',fit: BoxFit.fill,):Image.file(
+                              File(snap.data[index].albumArtwork),
                               fit: BoxFit.fill,
                             ),
                           ),
                         ),
-                        title: Text(snap.data[index].getStSongTitle),
+                        title: Text(snap.data[index].title),
                         trailing: IconButton(
                           icon: Icon(
                             Icons.more_vert,
@@ -69,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   )
-                : CircularProgressIndicator();
+                : Center(child: CircularProgressIndicator());
           },
         ),
       ),

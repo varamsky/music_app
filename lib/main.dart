@@ -10,6 +10,17 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Music Player App',
       home: HomeScreen(),
+      //home: Bogus(),
+    );
+  }
+}
+
+//TODO: remove this class
+class Bogus extends StatelessWidget {
+  @override
+  Widget build(BuildContext context){
+    return Scaffold(
+      body: Text('BOGUS'),
     );
   }
 }

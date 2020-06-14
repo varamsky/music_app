@@ -32,6 +32,7 @@ dependencies:
   random_color: any
   provider: any
   sqflite: any
+  intl: any
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -54,8 +55,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - lib/assets/default_music_artwork.jpg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
