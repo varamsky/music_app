@@ -1,16 +1,48 @@
 import 'package:assets_audio_player/assets_audio_player.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
-class PlayerData extends ChangeNotifier {
+class PlayerData extends ChangeNotifier{
   bool isPlay = true;
   double sliderValue = 0.0;
   String sliderDuration = '00:00';
+
+  int _currIndex;
+
+  int get getCurrIndex => _currIndex;
+
+  set setCurrIndex(int value) {
+    _currIndex = value;
+  }
+
+  /*int setCurrIndex(int index){
+    _currIndex = index;
+
+    //notifyListeners();//TODO: Try removing this line
+    return _currIndex;
+  }*/
+
+
+  increaseIndex(){
+    _currIndex++;
+
+    notifyListeners();
+  }
+
+  decreaseIndex(){
+    _currIndex--;
+
+    notifyListeners();
+  }
 
   void changeIsPlay() {
     isPlay = !isPlay;
 
     notifyListeners();
   }
+
+
+
+
 
   void seekSlider(double value, AssetsAudioPlayer assetsAudioPlayer) {
     sliderValue = value;

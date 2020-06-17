@@ -1,41 +1,20 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:music_app/screens/player_screen.dart';
 import 'package:music_app/model/music_data.dart';
+import 'package:provider/provider.dart';
 
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int f = 0;
-
-  MusicData musicData = MusicData();
-  Future<List<SongInfo>> _mySongs;
-
-  getSongs() async{
-    final FlutterAudioQuery audioQuery = FlutterAudioQuery();
-    _mySongs = audioQuery.getSongs();
-  }
-
-  @override
-  void initState(){
-    super.initState();
-    //getSongs();
-    final FlutterAudioQuery audioQuery = FlutterAudioQuery();
-    _mySongs = audioQuery.getSongs();
-    //_mySongs = musicData.findSongs();
-  }
+class HomeScreen extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
+    final musicData = Provider.of<MusicData>(context, listen: false);
+    musicData.getSongs();
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(title: Text("Music Player")),
         body: FutureBuilder(
-          future: _mySongs,
+          future: musicData.songsList,
           builder: (BuildContext context, AsyncSnapshot snap) {
             return (snap.connectionState == ConnectionState.done)
                 ? ListView.builder(
@@ -46,7 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (BuildContext context) => PlayerScreen(
-                                currSong: snap.data[index],
+                                songList: snap.data,
+                                index: index,
                               ),
                             ),
                           );

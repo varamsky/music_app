@@ -8,10 +8,11 @@ import 'package:provider/provider.dart';
 import 'package:random_color/random_color.dart';
 
 class PlayerControls extends StatefulWidget {
-  final SongInfo currSong;
+  final List<SongInfo> songList;
+  int currIndex;
 
   //MusicControls({@required this.isPlay,@required this.assetsAudioPlayer});
-  PlayerControls({@required this.currSong});
+  PlayerControls({@required this.songList, @required this.currIndex});
 
   @override
   _PlayerControlsState createState() => _PlayerControlsState();
@@ -21,20 +22,9 @@ class _PlayerControlsState extends State<PlayerControls> {
   final assetsAudioPlayer = AssetsAudioPlayer();
 
   String totalDuration;
+  SongInfo currSong;
   //int sliderSeconds,sliderMinutes,sliderHours;
 
-  @override
-  void initState() {
-    super.initState();
-
-    //sliderSeconds=0;
-    //sliderMinutes=0;
-    //sliderHours=0;
-
-    totalDuration = widget.currSong.duration;
-    properDuration();
-    playSong(widget.currSong);
-  }
 
   @override
   void dispose() {
@@ -46,27 +36,48 @@ class _PlayerControlsState extends State<PlayerControls> {
 
   @override
   Widget build(BuildContext context) {
+    print('Inside PlayerControls build');
     final playerData = Provider.of<PlayerData>(context, listen: false);
+    print('Inside PlayerControls build after provider instantiation');
+    playerData.setCurrIndex = widget.currIndex;
+    print(
+        'widget.currIndex :: ${widget.currIndex} playerData.getCurrIndex :: ${playerData.getCurrIndex}');
+    print('currSong ${widget.songList[playerData.getCurrIndex]}');
+    currSong = widget.songList[playerData.getCurrIndex];
+    totalDuration = currSong.duration;
+    properDuration();
+    playSong(currSong);//TODO: try placing it in PlayerData and listen to the ValueStream to get updated duration as the music plays
+
+    print('Inside PlayerControls build before return');
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Container(
-            width: 250.0,
-            height: 250.0,
-            //color: Colors.transparent,
-            color: RandomColor().randomColor(),
-            child: (widget.currSong.albumArtwork == null)
-                ? Image.asset(
-                    'lib/assets/default_music_artwork.jpg',
-                    fit: BoxFit.fill,
-                  )
-                : Image.file(
-                    File(widget.currSong.albumArtwork),
-                    fit: BoxFit.fill,
-                  ),
+          Consumer<PlayerData>(
+            builder:
+                (BuildContext context, PlayerData playerData, Widget widget) =>
+                    Container(
+              width: 250.0,
+              height: 250.0,
+              //color: Colors.transparent,
+              color: RandomColor().randomColor(),
+              child: (currSong.albumArtwork == null)
+                  ? Image.asset(
+                      'lib/assets/default_music_artwork.jpg',
+                      fit: BoxFit.fill,
+                    )
+                  : Image.file(
+                      File(currSong.albumArtwork),
+                      fit: BoxFit.fill,
+                    ),
+            ),
+          ),
+          Consumer<PlayerData>(
+            builder:
+                (BuildContext context, PlayerData playerData, Widget widget) =>
+                Text(currSong.title,style: TextStyle(color: Colors.black,fontSize: 25.0),),
           ),
           Row(
             mainAxisSize: MainAxisSize.max,
@@ -74,7 +85,18 @@ class _PlayerControlsState extends State<PlayerControls> {
             children: <Widget>[
               IconButton(
                 icon: Icon(Icons.keyboard_arrow_left),
-                onPressed: () {},
+                onPressed: () {
+                  //TODO: update albumArtwork with song change
+
+                  if (playerData.getCurrIndex != 0) {
+                    playerData.decreaseIndex();
+                  }
+                  playerData.isPlay = true;
+                  //currIndex = playerData.getCurrIndex;
+                  assetsAudioPlayer.stop();
+                  currSong = widget.songList[playerData.getCurrIndex];
+                  playSong(currSong);
+                },
               ),
               Consumer<PlayerData>(
                 builder: (BuildContext context, PlayerData playerData,
@@ -92,7 +114,16 @@ class _PlayerControlsState extends State<PlayerControls> {
               IconButton(
                 icon: Icon(Icons.keyboard_arrow_right),
                 onPressed: () {
-                  assetsAudioPlayer.seek(Duration(minutes: 2));
+                  //TODO: update albumArtwork with song change
+
+                  if (playerData.getCurrIndex != (widget.songList.length - 1)) {
+                    playerData.increaseIndex();
+                  }
+                  playerData.isPlay = true;
+                  //currIndex = musicData.getCurrIndex;
+                  assetsAudioPlayer.stop();
+                  currSong = widget.songList[playerData.getCurrIndex];
+                  playSong(currSong);
                 },
               ),
             ],
@@ -103,16 +134,23 @@ class _PlayerControlsState extends State<PlayerControls> {
             children: <Widget>[
               Consumer<PlayerData>(
                 builder: (BuildContext context, PlayerData playerData,
-                        Widget widget) =>
-                    Text(playerData.sliderDuration),
+                        Widget widget) {
+                  //TODO: update sliderDuration value as song plays
+
+
+                  return Text(playerData.sliderDuration);
+
+                }
               ),
               Consumer<PlayerData>(
                 builder: (BuildContext context, PlayerData playerData,
                         Widget consumerWidget) =>
                     Slider(
+                  //TODO: update sliderValue as song plays
+
                   value: playerData.sliderValue,
                   min: 0.0,
-                  max: double.parse(widget.currSong.duration),
+                  max: double.parse(currSong.duration),
                   divisions: 100,
                   activeColor: Colors.green,
                   inactiveColor: Colors.grey,
@@ -121,7 +159,13 @@ class _PlayerControlsState extends State<PlayerControls> {
                   },
                 ),
               ),
-              Text(totalDuration),
+              Consumer<PlayerData>(
+                builder: (BuildContext context,PlayerData playerData,Widget widget) {
+                  totalDuration = currSong.duration;
+                  properDuration();
+                  return Text(totalDuration);
+                }
+              ),
             ],
           ),
 
