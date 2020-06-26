@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
-import 'package:intl/intl.dart';
 import 'package:music_app/model/player_data.dart';
+import 'package:music_app/screens/queue_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:random_color/random_color.dart';
 
@@ -23,8 +23,6 @@ class _PlayerControlsState extends State<PlayerControls> {
 
   String totalDuration;
   SongInfo currSong;
-  //int sliderSeconds,sliderMinutes,sliderHours;
-
 
   @override
   void dispose() {
@@ -45,9 +43,8 @@ class _PlayerControlsState extends State<PlayerControls> {
     print('currSong ${widget.songList[playerData.getCurrIndex]}');
     currSong = widget.songList[playerData.getCurrIndex];
     totalDuration = currSong.duration;
+    playerData.playSong(currSong, assetsAudioPlayer, totalDuration);
     properDuration();
-    playSong(currSong);//TODO: try placing it in PlayerData and listen to the ValueStream to get updated duration as the music plays
-
     print('Inside PlayerControls build before return');
     return Center(
       child: Column(
@@ -55,10 +52,11 @@ class _PlayerControlsState extends State<PlayerControls> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Consumer<PlayerData>(
-            builder:
-                (BuildContext context, PlayerData playerData, Widget widget) =>
-                    Container(
+          //selector ensures that the widget is rebuild only when there is a change to PlayerData.currIndex
+          Selector<PlayerData, int>(
+            selector: (_, model) => model.currIndex,
+            builder: (BuildContext context, int index, Widget widget) =>
+                Container(
               width: 250.0,
               height: 250.0,
               //color: Colors.transparent,
@@ -66,18 +64,27 @@ class _PlayerControlsState extends State<PlayerControls> {
               child: (currSong.albumArtwork == null)
                   ? Image.asset(
                       'lib/assets/default_music_artwork.jpg',
-                      fit: BoxFit.fill,
+                      fit: BoxFit.cover,
                     )
                   : Image.file(
                       File(currSong.albumArtwork),
-                      fit: BoxFit.fill,
+                      fit: BoxFit.cover,
                     ),
             ),
           ),
-          Consumer<PlayerData>(
-            builder:
-                (BuildContext context, PlayerData playerData, Widget widget) =>
-                Text(currSong.title,style: TextStyle(color: Colors.black,fontSize: 25.0),),
+          Selector<PlayerData, int>(
+            selector: (_, model) => model.currIndex,
+            builder: (BuildContext context, int index, Widget widget) => Text(
+              currSong.title,
+              style: TextStyle(color: Colors.black, fontSize: 25.0),
+            ),
+          ),
+          Selector<PlayerData, int>(
+            selector: (_, model) => model.currIndex,
+            builder: (BuildContext context, int index, Widget widget) => Text(
+              currSong.artist,
+              style: TextStyle(color: Colors.black, fontSize: 20.0),
+            ),
           ),
           Row(
             mainAxisSize: MainAxisSize.max,
@@ -86,16 +93,16 @@ class _PlayerControlsState extends State<PlayerControls> {
               IconButton(
                 icon: Icon(Icons.keyboard_arrow_left),
                 onPressed: () {
-                  //TODO: update albumArtwork with song change
-
                   if (playerData.getCurrIndex != 0) {
                     playerData.decreaseIndex();
                   }
                   playerData.isPlay = true;
                   //currIndex = playerData.getCurrIndex;
                   assetsAudioPlayer.stop();
+                  playerData.sliderValue = 0.0;
                   currSong = widget.songList[playerData.getCurrIndex];
-                  playSong(currSong);
+                  playerData.playSong(
+                      currSong, assetsAudioPlayer, totalDuration);
                 },
               ),
               Consumer<PlayerData>(
@@ -114,16 +121,16 @@ class _PlayerControlsState extends State<PlayerControls> {
               IconButton(
                 icon: Icon(Icons.keyboard_arrow_right),
                 onPressed: () {
-                  //TODO: update albumArtwork with song change
-
                   if (playerData.getCurrIndex != (widget.songList.length - 1)) {
                     playerData.increaseIndex();
                   }
                   playerData.isPlay = true;
                   //currIndex = musicData.getCurrIndex;
                   assetsAudioPlayer.stop();
+                  playerData.sliderValue = 0.0;
                   currSong = widget.songList[playerData.getCurrIndex];
-                  playSong(currSong);
+                  playerData.playSong(
+                      currSong, assetsAudioPlayer, totalDuration);
                 },
               ),
             ],
@@ -132,40 +139,39 @@ class _PlayerControlsState extends State<PlayerControls> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
-              Consumer<PlayerData>(
-                builder: (BuildContext context, PlayerData playerData,
-                        Widget widget) {
-                  //TODO: update sliderDuration value as song plays
-
-
-                  return Text(playerData.sliderDuration);
-
-                }
+              Consumer<PlayerData>(builder:
+                  (BuildContext context, PlayerData playerData, Widget widget) {
+                return Text(playerData.sliderDuration);
+              }),
+              Column(
+                children: <Widget>[
+                  Selector<PlayerData, double>(
+                      selector: (_, model) => model.sliderValue,
+                      builder: (BuildContext context, double sliderValue,
+                          Widget consumerWidget) {
+                        return Slider(
+                          //TODO: update sliderValue as song plays
+                          value: playerData
+                              .sliderValue, // TODO: sliderValue changes but nothing observed on screen
+                          min: 0.0,
+                          max: double.parse(currSong.duration),
+                          divisions: 100,
+                          activeColor: Colors.green,
+                          inactiveColor: Colors.grey,
+                          onChanged: (double value) {
+                            playerData.sliderValue = value;
+                            playerData.seekSlider(value, assetsAudioPlayer);
+                          },
+                        );
+                      }),
+                ],
               ),
-              Consumer<PlayerData>(
-                builder: (BuildContext context, PlayerData playerData,
-                        Widget consumerWidget) =>
-                    Slider(
-                  //TODO: update sliderValue as song plays
-
-                  value: playerData.sliderValue,
-                  min: 0.0,
-                  max: double.parse(currSong.duration),
-                  divisions: 100,
-                  activeColor: Colors.green,
-                  inactiveColor: Colors.grey,
-                  onChanged: (double value) {
-                    playerData.seekSlider(value, assetsAudioPlayer);
-                  },
-                ),
-              ),
-              Consumer<PlayerData>(
-                builder: (BuildContext context,PlayerData playerData,Widget widget) {
-                  totalDuration = currSong.duration;
-                  properDuration();
-                  return Text(totalDuration);
-                }
-              ),
+              Consumer<PlayerData>(builder:
+                  (BuildContext context, PlayerData playerData, Widget widget) {
+                totalDuration = currSong.duration;
+                properDuration();
+                return Text(totalDuration);
+              }),
             ],
           ),
 
@@ -177,12 +183,22 @@ class _PlayerControlsState extends State<PlayerControls> {
             color: RandomColor().randomColor(),
             child: Text('test'),
           ),
+          IconButton(
+            color: Colors.amber,
+            icon: Icon(Icons.queue_music),
+            tooltip: 'Queue',
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) =>
+                      QueueScreen(queue: widget.songList,currIndex: widget.currIndex)));
+            },
+          ),
         ],
       ),
     );
   }
 
-  playSong(SongInfo songInfo) async {
+  /*playSong(SongInfo songInfo) async {
     //final file = new File('${songInfo.filePath}');
 
     assetsAudioPlayer.open(
@@ -190,7 +206,7 @@ class _PlayerControlsState extends State<PlayerControls> {
     );
 
     print('PATH :: ${songInfo.filePath}  PLAYING');
-  }
+  }*/
 
   properDuration() {
     //For total Duration

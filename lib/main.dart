@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:music_app/model/music_data.dart';
 import 'package:music_app/screens/home_screen.dart';
@@ -5,7 +7,7 @@ import 'package:provider/provider.dart';
 
 //TODO: check this
 /*What I learned from this project
-* 1-> Using Providers
+* 1-> Using Provider State Management
 * 2-> Using Audio with Flutter
 * */
 
@@ -22,9 +24,70 @@ class MyApp extends StatelessWidget {
         child: HomeScreen(),
       ),
       //home: Bogus(),
+      //home: MyTimer(),
     );
   }
 }
+
+// TODO: remove this class
+class MyTimer extends StatefulWidget {
+  @override
+  _TimerState createState() => _TimerState();
+}
+
+class _TimerState extends State<MyTimer> {
+  double localSliderValue = 0.0;
+  int myTick;
+
+  @override
+  void initState() {
+    super.initState();
+
+    startTimer();
+  }
+
+  void startTimer(){
+    var x = Timer.periodic(Duration(seconds: 1), (Timer time){
+      setState(() {
+        myTick = time.tick;
+        print(myTick);
+        localSliderValue = myTick.toDouble();
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(myTick.toString()),
+            Slider(
+              value: localSliderValue,
+              min: 0.0,
+              max: 15.0,
+              //divisions: 100,
+              activeColor: Colors.green,
+              inactiveColor: Colors.grey,
+              onChanged: (double value) {
+                setState(() {
+                  localSliderValue = value;
+                });
+                //localSliderValue = playerData.sliderValue;
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
 
 //TODO: remove this class
 class Bogus extends StatelessWidget {
