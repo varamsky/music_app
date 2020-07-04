@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
+import 'package:marquee/marquee.dart';
 import 'package:music_app/model/player_data.dart';
 import 'package:music_app/screens/queue_screen.dart';
 import 'package:provider/provider.dart';
@@ -74,16 +75,30 @@ class _PlayerControlsState extends State<PlayerControls> {
           ),
           Selector<PlayerData, int>(
             selector: (_, model) => model.currIndex,
+            builder: (BuildContext context, int index, Widget widget) =>
+                Expanded(
+                    child: Marquee(
+                      blankSpace: 50.0,
+                      text: currSong.title,
+              style: TextStyle(color: Colors.black, fontSize: 25.0),
+            )),
+          ),
+          /*Selector<PlayerData, int>(
+            selector: (_, model) => model.currIndex,
             builder: (BuildContext context, int index, Widget widget) => Text(
               currSong.title,
               style: TextStyle(color: Colors.black, fontSize: 25.0),
             ),
-          ),
+          ),*/
           Selector<PlayerData, int>(
             selector: (_, model) => model.currIndex,
-            builder: (BuildContext context, int index, Widget widget) => Text(
-              currSong.artist,
-              style: TextStyle(color: Colors.black, fontSize: 20.0),
+            builder: (BuildContext context, int index, Widget widget) =>
+                Expanded(
+              child: Marquee(
+                blankSpace: 50.0,
+                text: currSong.artist,
+                style: TextStyle(color: Colors.black, fontSize: 20.0),
+              ),
             ),
           ),
           Row(
@@ -189,8 +204,8 @@ class _PlayerControlsState extends State<PlayerControls> {
             tooltip: 'Queue',
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) =>
-                      QueueScreen(queue: widget.songList,currIndex: widget.currIndex)));
+                  builder: (BuildContext context) => QueueScreen(
+                      queue: widget.songList, currIndex: widget.currIndex)));
             },
           ),
         ],

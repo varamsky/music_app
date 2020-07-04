@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
-import 'package:music_app/model/player_data.dart';
 
 class QueueScreen extends StatelessWidget {
   final List<SongInfo> queue;
@@ -12,20 +11,26 @@ class QueueScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double initialScroll = (currIndex/(queue.length)).toDouble();
-    ScrollController _scrollController = ScrollController(initialScrollOffset: initialScroll); //TODO: initialScroll does't work
+    double initialScroll = (currIndex/(queue.length)).toDouble() * 100;
+    print('Initial Scroll $initialScroll');
+    ScrollController _scrollController = ScrollController(initialScrollOffset: initialScroll * (queue.length - 26.0));
 
     return Scaffold(
       appBar: AppBar(title: Text("Queue"),),
       body: Scrollbar(
         controller: _scrollController,
-        child: ListView.builder(
+        child: ListView.separated(
+          controller: _scrollController,
           itemCount: queue.length,
+          separatorBuilder: (BuildContext context,int index) => Divider(),
           itemBuilder: (BuildContext context, int index){
             return ListTile(
-              title: Text(queue[index].title),
-              subtitle: Text(queue[index].artist),
-              selected: (index == currIndex) ? true : false,
+              //title: Text(queue[index].title),
+              //subtitle: Text(queue[index].artist),
+              enabled: (index == currIndex),// true or false
+              title: RichText(text: TextSpan(text: queue[index].title,style: TextStyle(color: (index == currIndex)?Colors.blue:Colors.black, fontSize: 18)),maxLines: 2,overflow: TextOverflow.ellipsis,),
+              subtitle: RichText(text: TextSpan(text: queue[index].artist,style: TextStyle(color: (index == currIndex)?Colors.blue:Colors.grey, fontSize: 15),),maxLines: 1,overflow: TextOverflow.ellipsis,),
+              selected: (index == currIndex),// true or false
             );
           },
         ),
