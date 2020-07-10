@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:music_app/screens/player_screen.dart';
-import 'package:music_app/model/music_data.dart';
+import 'package:music_app/providers/music_data.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {

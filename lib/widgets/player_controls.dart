@@ -3,7 +3,10 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:marquee/marquee.dart';
-import 'package:music_app/model/player_data.dart';
+import 'package:music_app/databases/fav_pl_db.dart';
+import 'package:music_app/models/db_song_model.dart';
+import 'package:music_app/providers/player_data.dart';
+import 'package:music_app/screens/fav_pl_screen.dart';
 import 'package:music_app/screens/queue_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:random_color/random_color.dart';
@@ -33,8 +36,14 @@ class _PlayerControlsState extends State<PlayerControls> {
     assetsAudioPlayer.dispose();
   }
 
+  FavPlDb db = FavPlDb(); // TODO: remove this from here
+  List<DbSongModel> dbSongList = List(); // TODO: remove this from here too
+
   @override
   Widget build(BuildContext context) {
+
+    db.initDb(); // TODO: remove this
+
     print('Inside PlayerControls build');
     final playerData = Provider.of<PlayerData>(context, listen: false);
     print('Inside PlayerControls build after provider instantiation');
@@ -198,15 +207,40 @@ class _PlayerControlsState extends State<PlayerControls> {
             color: RandomColor().randomColor(),
             child: Text('test'),
           ),
-          IconButton(
-            color: Colors.amber,
-            icon: Icon(Icons.queue_music),
-            tooltip: 'Queue',
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => QueueScreen(
-                      queue: widget.songList, currIndex: widget.currIndex)));
-            },
+          Row(
+            children: <Widget>[
+              Builder(
+                builder: (BuildContext context){
+                  return IconButton(
+                    color: Colors.amber,
+                    icon: Icon(Icons.favorite),
+                    tooltip: 'Add to Favorite',
+                    onPressed: () {
+                      // TODO: change this to use fav_db_provider
+                      addSongToPlaylist(context);
+                    },
+                  );
+                },
+              ),
+              IconButton(
+                color: Colors.amber,
+                icon: Icon(Icons.queue_music),
+                tooltip: 'Queue',
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) => QueueScreen(
+                          queue: widget.songList, currIndex: widget.currIndex)));
+                },
+              ),
+              IconButton(
+                color: Colors.amber,
+                icon: Icon(Icons.playlist_play),
+                tooltip: 'Playlists',
+                onPressed: () {
+                  readSongsFromDb();
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -236,4 +270,24 @@ class _PlayerControlsState extends State<PlayerControls> {
         ? '$minutes:$seconds'
         : '$hours:$minutes:$seconds';
   }
+
+  void addSongToPlaylist(BuildContext context) async{
+    DbSongModel songToAdd = DbSongModel(id: int.parse(currSong.id),title: currSong.title,filePath: currSong.filePath,albumArtwork: currSong.albumArtwork);
+
+    int result = await db.insertSong(songToAdd.toMap());
+    if(result != -1)
+      Scaffold.of(context).showSnackBar(SnackBar(content: Text('Added song to Playlist')));
+  }
+
+  void readSongsFromDb() async{
+    List<Map<String, dynamic>> map = await db.readSongs();
+
+    map.forEach((element) {dbSongList.add(DbSongModel.fromMap(element));});
+
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (BuildContext context) => FavPlScreen(songList: dbSongList,))).whenComplete(() => dbSongList.clear());
+  }
+
+
+
 }
