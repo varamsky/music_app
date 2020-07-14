@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
+import 'package:music_app/providers/db_providers/fav_db_provider.dart';
 import 'package:music_app/providers/music_data.dart';
 import 'package:music_app/providers/player_data.dart';
 import 'package:music_app/widgets/player_controls.dart';
