@@ -10,5 +10,4 @@ class PlListDbProvider with ChangeNotifier{
   initiateDb(){
     plListDb.initDb();
   }
-
 }

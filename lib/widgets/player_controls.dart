@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:marquee/marquee.dart';
 import 'package:music_app/databases/fav_pl_db.dart';
+import 'package:music_app/models/db_playlist_model.dart';
 import 'package:music_app/models/db_song_model.dart';
 import 'package:music_app/providers/db_providers/fav_db_provider.dart';
+import 'package:music_app/providers/db_providers/pl_list_db_provider.dart';
 import 'package:music_app/providers/player_data.dart';
 import 'package:music_app/screens/fav_pl_screen.dart';
 import 'package:music_app/screens/queue_screen.dart';
@@ -44,6 +46,7 @@ class _PlayerControlsState extends State<PlayerControls> {
   Widget build(BuildContext context) {
 
 //    db.initDb(); // TODO: remove this
+    final plListDbProvider = Provider.of<PlListDbProvider>(context,listen: false);
 
     final favDbProvider = Provider.of<FavDbProvider>(context,listen: false);
     print('checking favDbProvider ${favDbProvider.favPlDb}');
@@ -63,7 +66,7 @@ class _PlayerControlsState extends State<PlayerControls> {
     print('Inside PlayerControls build before return');
 
     return Center(
-      child: Column(
+      child: Column( // TODO: Wrap with SingleChildScrollView to let the keyboard come up for the TextField without any error.
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -238,6 +241,62 @@ class _PlayerControlsState extends State<PlayerControls> {
                           queue: widget.songList, currIndex: widget.currIndex)));
                 },
               ),
+              PopupMenuButton(
+                icon: Icon(Icons.more_vert,color: Colors.amber,),
+                tooltip: 'More',
+                color: Colors.amber,
+                onSelected: (String value){
+                  print('$value selected');
+                  switch(value){
+                    case 'Add to playlist':
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context){
+                          return AlertDialog(
+                            title: Text(value),
+                            content: FutureBuilder(
+                              future: plListDbProvider.plListDb.readPlaylists(),
+                              builder: (BuildContext context, AsyncSnapshot snap){
+                                return (snap.connectionState == ConnectionState.done)?ListView.builder(
+                                  itemCount: snap.data.length,
+                                  shrinkWrap: true, // shrinks size of list view else it takes up whole screen
+                                  itemBuilder: (BuildContext context,int index){
+                                    return ListTile(title: Text(snap.data[index]['dbName']),);
+                                  },
+                                ):Container();
+                                //return ListTile(title: Text(snap.data['dbName'].toString()),);
+                              },
+                            ),
+                            actions: <Widget>[
+                              RaisedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  showNewPlaylistDialog();
+                                },// TODO: implement this
+                                child: Text('New Playlist'),
+                              ),
+                              RaisedButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text('Cancel'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      break;
+                    case 'Settings':
+                      break;
+                  }
+                },
+                itemBuilder: (BuildContext context){
+                  return {'Add to playlist', 'Settings'}.map((String choice) {
+                    return PopupMenuItem<String>(
+                      value: choice,
+                      child: Text(choice),
+                    );
+                  }).toList();
+                },
+              ),
             ],
           ),
         ],
@@ -277,4 +336,47 @@ class _PlayerControlsState extends State<PlayerControls> {
     if(result != -1)
       Scaffold.of(context).showSnackBar(SnackBar(content: Text('Added song to Playlist')));
   }
+
+  void showNewPlaylistDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context){
+        return AlertDialog(
+          title: Text('New Playlist'),
+          content: TextField( // TODO: use SingleChildScrollView to let the keyboard come up without any error.
+            decoration: InputDecoration(
+              hintText: 'New playlist name',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            RaisedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // TODO: implement this
+
+              },// TODO: implement this
+              child: Text('CREATE'),
+            ),
+            RaisedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('CANCEL'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  /*void readPlaylistsFromDb(PlListDbProvider plListDbProvider,BuildContext context) async{
+//    List<Map<String, dynamic>> map = await db.readSongs();
+
+
+    List<Map<String, dynamic>> map = await plListDbProvider.plListDb.readPlaylists();
+
+    map.forEach((element) {plListDbProvider.dbPlaylistList.add(DbPlaylistModel.fromMap(element));});
+  }*/
+
 }
