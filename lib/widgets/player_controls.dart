@@ -3,13 +3,14 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:marquee/marquee.dart';
-import 'package:music_app/databases/fav_pl_db.dart';
+import 'package:music_app/databases/playlist_db.dart';
 import 'package:music_app/models/db_playlist_model.dart';
 import 'package:music_app/models/db_song_model.dart';
-import 'package:music_app/providers/db_providers/fav_db_provider.dart';
+import 'package:music_app/providers/db_providers/playlist_db_provider.dart';
 import 'package:music_app/providers/db_providers/pl_list_db_provider.dart';
 import 'package:music_app/providers/player_data.dart';
-import 'package:music_app/screens/fav_pl_screen.dart';
+import 'package:music_app/screens/addToPlScreen.dart';
+import 'package:music_app/screens/playlist_screen.dart';
 import 'package:music_app/screens/queue_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:random_color/random_color.dart';
@@ -48,9 +49,9 @@ class _PlayerControlsState extends State<PlayerControls> {
 //    db.initDb(); // TODO: remove this
     final plListDbProvider = Provider.of<PlListDbProvider>(context,listen: false);
 
-    final favDbProvider = Provider.of<FavDbProvider>(context,listen: false);
-    print('checking favDbProvider ${favDbProvider.favPlDb}');
-    print('checking favDbProvider ${favDbProvider.favPlDb.readSongs()}');
+    final playlistDbProvider = Provider.of<PlaylistDbProvider>(context,listen: false);
+    print('checking playlistDbProvider ${playlistDbProvider.playlistDb}');
+    print('checking playlistDbProvider ${playlistDbProvider.playlistDb.readSongs()}');
 
     print('Inside PlayerControls build');
     final playerData = Provider.of<PlayerData>(context, listen: false);
@@ -225,8 +226,10 @@ class _PlayerControlsState extends State<PlayerControls> {
                     icon: Icon(Icons.favorite), // (isFav)?Icon(Icons.favorite):Icon(Icons.favorite_border),
                     tooltip: 'Add to Favorite',
                     onPressed: () {
+                      checkFavPlExists(plListDbProvider);
                       // TODO: change this to use fav_db_provider
-                      addSongToPlaylist(context,favDbProvider);
+                      print('\n\nadd to fav pressed\n\n');
+                      addSongToPlaylist(context,playlistDbProvider);
                     },
                   );
                 },
@@ -249,7 +252,8 @@ class _PlayerControlsState extends State<PlayerControls> {
                   print('$value selected');
                   switch(value){
                     case 'Add to playlist':
-                      showDialog(
+                      Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => AddToPlScreen(currSong: currSong,)));
+/*                    showDialog(
                         context: context,
                         builder: (BuildContext context){
                           return AlertDialog(
@@ -282,7 +286,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                             ],
                           );
                         },
-                      );
+                      );*/
                       break;
                     case 'Settings':
                       break;
@@ -328,11 +332,14 @@ class _PlayerControlsState extends State<PlayerControls> {
         : '$hours:$minutes:$seconds';
   }
 
-  void addSongToPlaylist(BuildContext context,FavDbProvider favDbProvider) async{
-    DbSongModel songToAdd = DbSongModel(id: int.parse(currSong.id),title: currSong.title,filePath: currSong.filePath,albumArtwork: currSong.albumArtwork);
+  void addSongToPlaylist(BuildContext context,PlaylistDbProvider favDbProvider) async{
+    print('\n\ninside addSongToPlaylist()\n\n');
+    DbSongModel songToAdd = DbSongModel(id: int.parse(currSong.id),title: currSong.title,filePath: currSong.filePath,albumArtwork: currSong.albumArtwork,playlist: 'favorites');
 
 //    int result = await db.insertSong(songToAdd.toMap());
-    int result = await favDbProvider.favPlDb.insertSong(songToAdd.toMap());
+    print('\n\nbefore insert song\n\n');
+    int result = await favDbProvider.playlistDb.insertSong(songToAdd.toMap());
+    print('\n\nafter insert song\n\n');
     if(result != -1)
       Scaffold.of(context).showSnackBar(SnackBar(content: Text('Added song to Playlist')));
   }
@@ -367,6 +374,17 @@ class _PlayerControlsState extends State<PlayerControls> {
         );
       },
     );
+  }
+
+  void checkFavPlExists(PlListDbProvider plListDbProvider) async{
+    //plListDbProvider.plListDb.
+    List<Map<String, dynamic>> map = await plListDbProvider.plListDb.readPlaylists();
+
+    if(!map.contains('favorites')){
+      DbPlaylistModel dbPlaylistModel = DbPlaylistModel(dbName: 'favorites');
+      plListDbProvider.plListDb.insertPlaylist(dbPlaylistModel.toMap());
+    }
+
   }
 
 

@@ -2,10 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:music_app/models/db_song_model.dart';
 
-class FavPlScreen extends StatelessWidget {
+class PlaylistScreen extends StatelessWidget {
   final List<DbSongModel> songList;
 
-  FavPlScreen({@required this.songList});
+  PlaylistScreen({@required this.songList});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class FavPlScreen extends StatelessWidget {
 
         // TODO: arrange the songs in the order that they were added i.e., last added song should appear last
 
-        body: ListView.builder(
+        body: (songList.length == 0)?Center(child: Text('No songs in this playlist.'),):ListView.builder(
           itemCount: songList.length,
           itemBuilder: (BuildContext context,int index){
             print('from FavPlScreen albumArtwork: ${songList[index].albumArtwork}]');

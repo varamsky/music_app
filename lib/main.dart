@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:music_app/providers/db_providers/fav_db_provider.dart';
+import 'package:music_app/providers/db_providers/playlist_db_provider.dart';
 import 'package:music_app/providers/db_providers/pl_list_db_provider.dart';
 import 'package:music_app/providers/music_data.dart';
-import 'package:music_app/screens/fav_pl_screen.dart';
 import 'package:music_app/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -21,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<MusicData>(create: (BuildContext context) => MusicData()),
-        ChangeNotifierProvider<FavDbProvider>(create: (BuildContext context) => FavDbProvider()),
+        ChangeNotifierProvider<PlaylistDbProvider>(create: (BuildContext context) => PlaylistDbProvider()),
         ChangeNotifierProvider<PlListDbProvider>(create: (BuildContext context) => PlListDbProvider()),
       ],
       child: MaterialApp(

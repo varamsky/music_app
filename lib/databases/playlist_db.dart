@@ -1,25 +1,25 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-class FavPlDb{
+class PlaylistDb{
   static Future<Database> _db;
-  final String dbFileName = 'fav_playlist_db.db';
-  final String dbTableName = 'favoritesPlaylist';
+  final String dbFileName = 'playlist_db.db';
+  final String dbTableName = 'playlist';
 
   Future<Database> get database async{
-    if(FavPlDb._db == null)
+    if(PlaylistDb._db == null)
       await initDb();
 
-    return FavPlDb._db;
+    return PlaylistDb._db;
   }
 
 
   initDb() async{
-    FavPlDb._db = openDatabase(
+    PlaylistDb._db = openDatabase(
       join(await getDatabasesPath(),dbFileName),
       version: 1,
       onCreate: (Database db,int version){
-        db.execute('CREATE TABLE $dbTableName(id INTEGER PRIMARY KEY,title TEXT,filePath TEXT,albumArt TEXT)');
+        db.execute('CREATE TABLE $dbTableName(id INTEGER PRIMARY KEY,title TEXT,filePath TEXT,albumArt TEXT,playlist TEXT)');
       }
     );
   }
@@ -28,6 +28,7 @@ class FavPlDb{
     Database db = await database;
 
     int result = await db.insert(dbTableName, songToAdd,conflictAlgorithm: ConflictAlgorithm.replace);
+    print('\n\nIn PlaylistDB :: song added => ${songToAdd.values}\n\n');
     return result;
   }
 
@@ -44,6 +45,21 @@ class FavPlDb{
     List<Map<String,dynamic>> result = await db.rawQuery('SELECT * FROM $dbTableName');
     print('readSongs result from db.dart $result');
     return result;
+  }
+
+  Future<List<Map<String,dynamic>>> readSongsFromPlaylist({String playlist}) async{
+    Database db = await database;
+
+    List<Map<String,dynamic>> result = await db.rawQuery('SELECT * FROM $dbTableName WHERE playlist = "$playlist"');
+    print('readSongs result from db.dart $result');
+    return result;
+  }
+
+  Future<int> getPlaylistSize({String playlist}) async{
+    Database db = await database;
+
+    List<Map<String,dynamic>> result = await db.rawQuery('SELECT * FROM $dbTableName WHERE playlist = "$playlist"');
+    return result.length;
   }
 
   // check if song is already favorite i.e, is already included in db

@@ -2,9 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:music_app/models/db_playlist_model.dart';
 import 'package:music_app/models/db_song_model.dart';
-import 'package:music_app/providers/db_providers/fav_db_provider.dart';
+import 'package:music_app/providers/db_providers/playlist_db_provider.dart';
 import 'package:music_app/providers/db_providers/pl_list_db_provider.dart';
-import 'package:music_app/screens/fav_pl_screen.dart';
+import 'package:music_app/screens/playlist_screen.dart';
 import 'package:music_app/screens/pl_list_screen.dart';
 import 'package:music_app/screens/player_screen.dart';
 import 'package:music_app/providers/music_data.dart';
@@ -14,7 +14,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final musicData = Provider.of<MusicData>(context, listen: false);
-    final favDbProvider = Provider.of<FavDbProvider>(context, listen: false);
+    final playlistDbProvider = Provider.of<PlaylistDbProvider>(context, listen: false);
     final plListDbProvider = Provider.of<PlListDbProvider>(context, listen: false);
     musicData.getSongs();
 
@@ -161,8 +161,7 @@ class HomeScreen extends StatelessWidget {
                   case 1:
                     //print('checking pl button ${await favDbProvider.favPlDb.readSongs()}');
                     print('checking pl screen');
-                    readPlaylistsFromDb(plListDbProvider, context);
-                    //readSongsFromDb(favDbProvider, context);
+                    readPlaylistsFromDb(plListDbProvider,playlistDbProvider, context);
                     break;
                 }
               },
@@ -173,26 +172,23 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void readPlaylistsFromDb(PlListDbProvider plListDbProvider,BuildContext context) async{
+  void readPlaylistsFromDb(PlListDbProvider plListDbProvider,PlaylistDbProvider playlistDbProvider,BuildContext context) async{
 //    List<Map<String, dynamic>> map = await db.readSongs();
-
 
     List<Map<String, dynamic>> map = await plListDbProvider.plListDb.readPlaylists();
 
+    print('NO. OF PLAYLISTS :: ${map.length}');
+
     map.forEach((element) {plListDbProvider.dbPlaylistList.add(DbPlaylistModel.fromMap(element));});
 
-    Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (BuildContext context) => PlListScreen(playlistList: plListDbProvider.dbPlaylistList,))).whenComplete(() => plListDbProvider.dbPlaylistList.clear());
-  }
+    Map<String, int> playlistSizeMap = Map<String, int>();
 
-
-  void readSongsFromDb(FavDbProvider favDbProvider,BuildContext context) async{
-//    List<Map<String, dynamic>> map = await db.readSongs();
-    List<Map<String, dynamic>> map = await favDbProvider.favPlDb.readSongs();
-
-    map.forEach((element) {favDbProvider.dbSongList.add(DbSongModel.fromMap(element));});
+    for(int i=0;i<plListDbProvider.dbPlaylistList.length;i++){
+      int size = await playlistDbProvider.playlistDb.getPlaylistSize(playlist: plListDbProvider.dbPlaylistList[i].dbName);
+      playlistSizeMap[plListDbProvider.dbPlaylistList[i].dbName] = size;
+    }
 
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (BuildContext context) => FavPlScreen(songList: favDbProvider.dbSongList,))).whenComplete(() => favDbProvider.dbSongList.clear());
+        builder: (BuildContext context) => PlListScreen(playlistList: plListDbProvider.dbPlaylistList,playlistSizeMap: playlistSizeMap,))).whenComplete(() => plListDbProvider.dbPlaylistList.clear());
   }
 }
